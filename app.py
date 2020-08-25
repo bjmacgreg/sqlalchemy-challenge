@@ -115,10 +115,16 @@ def weather_from_start_date(start1):
         filter(Measurement.date >= start1).all()  
     tobs_max_from_start_date = session.query(func.max(Measurement.tobs)).filter(Measurement.station == busiest_station).\
         filter(Measurement.date >= start1).all()  
-    return f'The minimum temperature (˚F) between {start1} and {last_day} was {tobs_min_from_start_date}; \
-        the mean was {tobs_avg_from_start_date}; and the maximum was {tobs_max_from_start_date}.'  
+    def unpack(s):
+        return " ".join(map(str, s))
+    tmin = unpack(tobs_min_from_start_date).strip("(,)")
+    tavg = unpack(tobs_avg_from_start_date).strip("(,)")
+    tmax = unpack(tobs_max_from_start_date).strip("(,)")
+   
+    return f'The minimum temperature (˚F) between {start1} and {unpack(last_day)} was {tmin}, \
+        the mean was {float(tavg):.1f}, and the maximum was {tmax}.'  
     
-@app.route("/api/v1.0/between/<start2>,<end>")
+@app.route("/api/v1.0/between/<start2>,<end1>")
 def weather_from_start_to_finish_date(start2, end1):
     print("")
     session = Session(engine)   
@@ -133,8 +139,14 @@ def weather_from_start_to_finish_date(start2, end1):
         filter(Measurement.date >= start2).filter(Measurement.date <= end1).all()  
     tobs_max_for_interval = session.query(func.max(Measurement.tobs)).filter(Measurement.station == busiest_station).\
         filter(Measurement.date >= start2).filter(Measurement.date <= end1).all()  
-    return f'The minimum temperature (˚F) between {start2} and {end1} was {tobs_min_for_interval}; \
-        the mean was {tobs_avg_for_interval}; and the maximum was {tobs_max_for_interval}.'  
+    def unpack(s):
+        return " ".join(map(str, s))
+    tmin = unpack(tobs_min_for_interval).strip("(,)")
+    tavg = unpack(tobs_avg_for_interval).strip("(,)")
+    tmax = unpack(tobs_max_for_interval).strip("(,)")
+
+    return f'The minimum temperature (˚F) between {start2} and {end1} was {tmin}, \
+        the mean was {float(tavg):.1f}, and the maximum was {tmax}.'  
 
 @app.route("/api/v1.0/between/with_input")
 def weather_from_start_to_finish_with_input():
@@ -144,10 +156,10 @@ def weather_from_start_to_finish_with_input():
     group_by(Measurement.station).\
     order_by(func.count(Measurement.tobs).desc()).\
     all()   
-    date_entry = input('Enter a start date in YYYY-MM-DD format')
+    date_entry = input('Enter a start date in YYYY-MM-DD format: ')
     year, month, day = map(int, date_entry.split('-'))
     start3 = dt.date(year, month, day)
-    date_entry = input('Enter an end date in YYYY-MM-DD format')
+    date_entry = input('Enter an end date in YYYY-MM-DD format: ')
     year, month, day = map(int, date_entry.split('-'))
     end2 = dt.date(year, month, day)
     busiest_station = station_tobs_activity[0][0] 
@@ -157,10 +169,14 @@ def weather_from_start_to_finish_with_input():
         filter(Measurement.date >= start3).filter(Measurement.date <= end2).all()  
     tobs_max_for_input_interval = session.query(func.max(Measurement.tobs)).filter(Measurement.station == busiest_station).\
         filter(Measurement.date >= start3).filter(Measurement.date <= end2).all()  
-    return f'The minimum temperature (˚F) between {start3} and {end2} was {tobs_min_for_input_interval}; \
-        the mean was {tobs_avg_for_input_interval}; and the maximum was {tobs_max_for_input_interval}.'  
+    def unpack(s):
+        return " ".join(map(str, s))
+    tmin = unpack(tobs_min_for_input_interval).strip("(,)")
+    tavg = unpack(tobs_avg_for_input_interval).strip("(,)")
+    tmax = unpack(tobs_max_for_input_interval).strip("(,)")
+
+    return f'The minimum temperature (˚F) between {start3} and {end2} was {tmin}, \
+        the mean was {float(tavg):.1f}, and the maximum was {tmax}.'  
  
-
-
 if __name__ == "__main__":
     app.run(debug=True)
